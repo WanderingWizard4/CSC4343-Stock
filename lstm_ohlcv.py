@@ -9,7 +9,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 # David' modules
 from stock_data_loader import StockDataLoader
-from multi_timeframe_features import MultiTimeFrameFeatures
+from feature_engineering import MultiTimeFrameFeatures
 from rolling_features import RollingFeatures
 
 
@@ -17,7 +17,7 @@ from rolling_features import RollingFeatures
 # CONFIGURATION
 # =============================================================
 
-DATA_PATH    = "OHLC 1 minute data/extracted_files"  # root folder for local CSV data
+DATA_PATH    = "../OHLC 1 minute data/extracted_files"  # root folder for local CSV data
 TICKERS_FILE = "s&p500tickers.txt"                   # one ticker per line
 START_DATE   = "1992-01-01"
 END_DATE     = "2026-02-28"
