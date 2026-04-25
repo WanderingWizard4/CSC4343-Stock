@@ -3,12 +3,6 @@ volatility_lstm.py
 ==================
 LSTM pipeline for forecasting realized volatility.
 
-Integrates:
-- David's StockDataLoader (loading 1-min OHLCV data)
-- David's MultiTimeFrameFeatures (resampling utility)
-- Landin's DataPreprocessApril19 logic (returns, lags, FRED macros, vol target)
-- Nathan's LSTM architecture (from lstm_ohlcv.py)
-
 Target: future_volatility — the 21-day forward rolling std of daily log returns.
         This is what we actually want to forecast per the project proposal.
 """
