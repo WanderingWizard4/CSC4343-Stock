@@ -18,7 +18,7 @@ Expected output structure:
 
 USAGE
 -----
-1. Download all .tar files from David's OneDrive into a single folder
+1. Download all .tar files from OneDrive into a single folder
    (e.g. a folder called "downloads" next to this script)
 2. Set TAR_DIR below to that folder path
 3. Set OUTPUT_DIR to where you want the extracted files
