@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sentinel — Methodology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void:#0A0A0B;--ink:#F5F5F0;--ink-2:#A0A09A;--ink-3:#5A5A55;
+  --line:rgba(245,245,240,0.10);--line-2:rgba(245,245,240,0.18);
+  --panel:#131315;--panel-2:#1A1A1D;
+  --accent:#4ADE80;--warn:#FBBF24;--danger:#EF4444;
+  --mono:'JetBrains Mono','SF Mono',Menlo,monospace;
+  --serif:'Source Serif 4',Georgia,serif;
+  --sans:'Inter',-apple-system,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--void);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh;}
+
+nav{display:flex;align-items:center;padding:0 3rem;height:52px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:100;}
+.nav-dot{width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at center,var(--accent) 35%,transparent 37%);border:1.5px solid var(--accent);margin-right:10px;}
+.nav-name{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.18em;color:var(--ink);text-transform:uppercase;text-decoration:none;}
+.nav-tag{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:14px;letter-spacing:.08em;}
+.nav-links{margin-left:auto;display:flex;gap:24px;}
+.nav-links a{font-family:var(--mono);font-size:10px;color:var(--ink-3);text-decoration:none;letter-spacing:.10em;text-transform:uppercase;transition:color .15s;}
+.nav-links a:hover,.nav-links a.active{color:var(--ink);}
+
+/* TWO-COL LAYOUT */
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 52px);}
+.sidebar{border-right:1px solid var(--line);padding:2.5rem 1.5rem;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;}
+.sidebar-title{font-family:var(--mono);font-size:9px;color:var(--ink-3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:1.25rem;}
+.toc-link{display:block;font-family:var(--mono);font-size:11px;color:var(--ink-3);text-decoration:none;padding:5px 0;letter-spacing:.05em;transition:color .15s;border-left:2px solid transparent;padding-left:10px;margin-left:-10px;}
+.toc-link:hover{color:var(--ink);}
+.toc-link.active{color:var(--accent);border-left-color:var(--accent);}
+.toc-section{margin-bottom:1.5rem;}
+.toc-section-label{font-family:var(--mono);font-size:9px;color:var(--ink-3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;opacity:.6;}
+
+/* CONTENT */
+.content{padding:3.5rem 3rem 5rem;max-width:720px;}
+.section{margin-bottom:4rem;scroll-margin-top:70px;}
+.section-num{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.75rem;}
+.section-h{font-family:var(--serif);font-size:32px;font-weight:400;letter-spacing:-.015em;margin-bottom:1rem;line-height:1.15;}
+.section-h em{font-style:italic;color:var(--accent);}
+.prose{font-size:15px;color:var(--ink-2);line-height:1.75;margin-bottom:1.25rem;}
+.prose strong{color:var(--ink);font-weight:500;}
+.prose em{font-style:italic;color:var(--ink);}
+.divider{height:1px;background:var(--line);margin:3rem 0;}
+
+/* FEATURE TABLE */
+.feat-table{width:100%;border-collapse:collapse;margin:1.5rem 0;}
+.feat-table th{font-family:var(--mono);font-size:9px;color:var(--ink-3);letter-spacing:.10em;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;}
+.feat-table td{padding:11px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink-2);}
+.feat-table tr:last-child td{border-bottom:none;}
+.feat-table .fname{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500;}
+.feat-table .fdim{font-family:var(--mono);font-size:11px;color:var(--ink-3);}
+
+/* CODE BLOCK */
+.code-wrap{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:1.5rem 0;font-family:var(--mono);font-size:12px;line-height:1.75;}
+.code-top{padding:8px 16px;border-bottom:1px solid var(--line);background:var(--panel-2);display:flex;justify-content:space-between;font-size:10px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;}
+.code-body{padding:1.25rem 1.5rem;background:#0E0E10;overflow-x:auto;}
+.kw{color:#C084FC;}
+.str{color:var(--accent);}
+.com{color:var(--ink-3);}
+.fn{color:#60A5FA;}
+.num-lit{color:#FB923C;}
+
+/* FORMULA BLOCK */
+.formula{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1.25rem 1.5rem;margin:1.25rem 0;font-family:var(--mono);font-size:13px;color:var(--ink);letter-spacing:.04em;line-height:2;}
+.formula .comment{color:var(--ink-3);font-size:11px;}
+
+/* CALLOUT */
+.callout{border-left:2px solid var(--accent);padding:12px 18px;background:rgba(74,222,128,.05);border-radius:0 6px 6px 0;margin:1.5rem 0;font-size:13px;color:var(--ink-2);line-height:1.65;}
+.callout strong{color:var(--accent);}
+
+/* RESULT CARDS */
+.result-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:1.5rem 0;}
+.rc{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1.25rem 1rem;text-align:center;}
+.rc.winner{border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.06);}
+.rc-val{font-family:var(--mono);font-size:24px;font-weight:500;margin-bottom:4px;}
+.rc.winner .rc-val{color:var(--accent);}
+.rc-label{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;}
+.rc-model{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:6px;}
+
+/* DISCLAIMER */
+.disc{background:var(--panel);border:1px solid var(--line);padding:14px 18px;border-radius:6px;font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em;line-height:1.75;display:flex;gap:10px;margin-top:3rem;}
+.disc-mark{color:var(--warn);flex-shrink:0;}
+
+footer{padding:1.75rem 3rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.08em;}
+footer a{color:var(--ink-3);text-decoration:none;}footer a:hover{color:var(--ink);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-dot"></div>
+  <a class="nav-name" href="index.html">Sentinel</a>
+  <span class="nav-tag">/ methodology</span>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="demo.html">Terminal</a>
+    <a href="methodology.html" class="active">Methodology</a>
+    <a href="https://github.com/WanderingWizard4/CSC4343-Stock" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- SIDEBAR TOC -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Contents</div>
+    <div class="toc-section">
+      <div class="toc-section-label">Background</div>
+      <a class="toc-link" href="#motivation">Motivation</a>
+      <a class="toc-link" href="#volatility">What is volatility?</a>
+      <a class="toc-link" href="#prior-work">Prior work</a>
+    </div>
+    <div class="toc-section">
+      <div class="toc-section-label">Data</div>
+      <a class="toc-link" href="#equity-data">Equity price data</a>
+      <a class="toc-link" href="#macro-data">Macro indicators</a>
+      <a class="toc-link" href="#target">Target construction</a>
+      <a class="toc-link" href="#features">Feature engineering</a>
+    </div>
+    <div class="toc-section">
+      <div class="toc-section-label">Model</div>
+      <a class="toc-link" href="#architecture">Architecture</a>
+      <a class="toc-link" href="#training">Training setup</a>
+      <a class="toc-link" href="#scaling">Scaling & leakage</a>
+    </div>
+    <div class="toc-section">
+      <div class="toc-section-label">Results</div>
+      <a class="toc-link" href="#baselines">Baselines</a>
+      <a class="toc-link" href="#results">Results</a>
+      <a class="toc-link" href="#limitations">Limitations</a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <div class="section" id="motivation">
+      <div class="section-num">01 — Motivation</div>
+      <h2 class="section-h">Why forecast <em>volatility</em> instead of price?</h2>
+      <p class="prose">Most retail finance applications chase the hardest problem in quantitative finance: predicting the direction of stock prices. The Efficient Market Hypothesis gives a clear verdict on this endeavor — any predictable pattern is quickly arbitraged away by institutional traders with faster data and better models. The signal-to-noise ratio of daily returns is, for all practical purposes, indistinguishable from zero for most horizons a retail investor would care about.</p>
+      <p class="prose">Volatility is a different matter entirely. While the <em>direction</em> of the next coin flip is unpredictable, the <em>variance</em> of coin flips is constant and perfectly estimable. Financial returns are analogous: the next return is nearly unpredictable, but the standard deviation of returns over the next month is substantially predictable from past data. This is the phenomenon known as <strong>volatility clustering</strong> — high-volatility periods beget high-volatility periods, and low-volatility periods beget low-volatility periods.</p>
+      <div class="callout"><strong>Practical implication:</strong> If you can forecast the variance of returns, you can size positions appropriately — allocating more capital to low-volatility assets and less to high-volatility ones — without needing to forecast direction at all. This is the mathematics behind risk-parity and volatility-targeting strategies used by institutional fund managers.</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="volatility">
+      <div class="section-num">02 — What is volatility?</div>
+      <h2 class="section-h">Realized volatility, defined.</h2>
+      <p class="prose">We define realized volatility as the rolling standard deviation of daily log returns over a fixed window. Log returns are used rather than simple returns because they are approximately additive across periods, have better stationarity properties, and avoid the asymmetry between positive and negative returns inherent in percentage changes.</p>
+      <div class="formula">
+        r_t = log(P_t / P_{t-1}) <span class="comment">  // daily log return</span>
+        σ_t = std(r_{t-w+1}, ..., r_t) <span class="comment"> // w-day realized vol</span>
+        target_t = σ_{t+w} <span class="comment"> // forward-shifted target (no look-ahead)</span>
+      </div>
+      <p class="prose">We use a window of <strong>w = 21 trading days</strong>, approximately one calendar month. This window is long enough to be robust to single-day outliers while remaining short enough to be actionable for tactical risk decisions. The target is forward-shifted by 21 days: at date t, we predict the realized volatility that will be observed over the 21 trading days following t.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="prior-work">
+      <div class="section-num">03 — Prior work</div>
+      <h2 class="section-h">GARCH and its limits.</h2>
+      <p class="prose">The dominant classical model for volatility forecasting is the GARCH family (Bollerslev, 1986). GARCH specifies that today's conditional variance is a weighted sum of past squared returns and past variances. It captures volatility clustering well and has closed-form estimation via maximum likelihood. However, it requires strong distributional assumptions, does not naturally incorporate exogenous predictors such as macroeconomic indicators, and is linear in its conditioning variables — meaning it cannot capture nonlinear regime interactions.</p>
+      <p class="prose">Recurrent neural networks, and LSTMs in particular (Hochreiter & Schmidhuber, 1997), are natural candidates for financial time series because they can model arbitrary nonlinear dependencies over long look-back horizons. Recent empirical work has found that LSTMs trained on sufficiently rich feature sets outperform GARCH on realized volatility prediction tasks, particularly when macroeconomic covariates are included.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="equity-data">
+      <div class="section-num">04 — Data · Equity prices</div>
+      <h2 class="section-h">Three decades of intraday bars.</h2>
+      <p class="prose">Minute-level OHLCV data for 503 S&P 500 constituents was sourced through the Finnhub API. The raw archive spans January 1992 through February 2026 — 34 years and approximately 1.4 billion individual minute bars. Because Finnhub's terms of service prohibit redistribution, the raw data is shared among project members through institutional storage and is excluded from the public repository.</p>
+      <p class="prose">For modeling, we resample minute bars to daily OHLCV using standard aggregation: first open, highest high, lowest low, last close, summed volume. Daily resolution aligns naturally with the FRED macro series and substantially reduces the dimensionality of the modeling problem. Intraday data is dominated by microstructure noise (bid-ask bounce, price impact) that is not the target of this study.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="macro-data">
+      <div class="section-num">05 — Data · Macro indicators</div>
+      <h2 class="section-h">Four FRED series, one day lagged.</h2>
+      <p class="prose">We supplement equity features with four macroeconomic series from the Federal Reserve Economic Database (FRED). Each series is shifted forward by one trading day before merging with equity data — this ensures the model only conditions on information that was publicly available at prediction time, eliminating look-ahead bias. Missing values on weekends and holidays are forward-filled.</p>
+      <table class="feat-table">
+        <thead><tr><th>FRED Code</th><th>Description</th><th>Rationale</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">T5YIE</td><td>5-year breakeven inflation expectation (TIPS-derived)</td><td>Captures inflationary regime; inflation uncertainty drives equity vol</td></tr>
+          <tr><td class="fname">DGS2</td><td>2-year U.S. Treasury yield</td><td>Short-rate sensitive to Fed policy; affects discount rates</td></tr>
+          <tr><td class="fname">DGS10</td><td>10-year U.S. Treasury yield</td><td>Benchmark long rate; term spread (10y−2y) signals recession risk</td></tr>
+          <tr><td class="fname">USEPUINDXD</td><td>Daily Economic Policy Uncertainty Index (Nick Bloom, Stanford)</td><td>Direct proxy for policy-driven uncertainty, correlated with vol spikes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="target">
+      <div class="section-num">06 — Data · Target construction</div>
+      <h2 class="section-h">Forward realized volatility — no leakage.</h2>
+      <p class="prose">The prediction target at each date t is the realized volatility computed over the 21 trading days following t. Constructing this requires careful attention to temporal ordering: the target is computed first as a rolling standard deviation over a backward-looking window, then shifted forward by the window length. This two-step construction is equivalent to asking "what volatility will be observed over the next month?" — which is precisely the operationally useful question.</p>
+      <div class="callout"><strong>Leakage prevention:</strong> The MinMaxScaler used for normalization is fit <em>only</em> on the training partition. Applying the same scaler across the full dataset would let future distribution information contaminate the training signal — a common error in financial ML that produces overly optimistic backtests.</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="features">
+      <div class="section-num">07 — Data · Feature engineering</div>
+      <h2 class="section-h">What goes into the model.</h2>
+      <p class="prose">Each daily training example is a 60-bar look-back window (approximately 3 months of trading days) over the following features:</p>
+      <table class="feat-table">
+        <thead><tr><th>Feature</th><th>Dim</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">volume</td><td class="fdim">1</td><td>Daily summed volume from minute bars</td></tr>
+          <tr><td class="fname">return</td><td class="fdim">1</td><td>Daily log return: log(close_t / close_{t-1})</td></tr>
+          <tr><td class="fname">return_1 … return_60</td><td class="fdim">60</td><td>Lagged daily log returns, 1-day to 60-day lookback</td></tr>
+          <tr><td class="fname">inflation_expectation</td><td class="fdim">1</td><td>T5YIE, 1-day lagged, forward-filled</td></tr>
+          <tr><td class="fname">two_year_treasury</td><td class="fdim">1</td><td>DGS2, 1-day lagged, forward-filled</td></tr>
+          <tr><td class="fname">ten_year_treasury</td><td class="fdim">1</td><td>DGS10, 1-day lagged, forward-filled</td></tr>
+          <tr><td class="fname">economic_uncertainty</td><td class="fdim">1</td><td>USEPUINDXD, 1-day lagged, forward-filled</td></tr>
+          <tr><td class="fname">volatility</td><td class="fdim">1</td><td>21-day trailing realized vol (the current period's vol)</td></tr>
+        </tbody>
+      </table>
+      <p class="prose">Total input dimension: <strong>66 features</strong> × 60 time steps = 3,960 values per training example.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="architecture">
+      <div class="section-num">08 — Model · Architecture</div>
+      <h2 class="section-h">A pooled 2-layer LSTM.</h2>
+      <p class="prose">We use a two-layer LSTM with 64 hidden units per layer, dropout of 0.2 applied between layers, and a single-unit linear head that produces a scalar prediction of next-period realized volatility. The key design choice is <strong>pooling across all 503 tickers</strong> in a single model rather than fitting one model per ticker. This allows the model to learn common volatility dynamics shared across the market — the patterns driven by macro regimes, liquidity crises, and sector-level stress — rather than overfitting to the idiosyncratic history of a single stock.</p>
+      <div class="code-wrap">
+        <div class="code-top"><span>model architecture</span><span>PyTorch</span></div>
+        <div class="code-body">
+<span class="kw">class</span> <span class="fn">LSTMModel</span>(nn.Module):
+  <span class="kw">def</span> <span class="fn">__init__</span>(self, input_size: <span class="fn">int</span>,
+               hidden_size: <span class="fn">int</span> = <span class="num-lit">64</span>,
+               num_layers:  <span class="fn">int</span> = <span class="num-lit">2</span>,
+               dropout:     <span class="fn">float</span> = <span class="num-lit">0.2</span>):
+    super().__init__()
+    self.lstm = nn.LSTM(
+      input_size  = input_size,   <span class="com"># 66 features</span>
+      hidden_size = hidden_size,  <span class="com"># 64 per layer</span>
+      num_layers  = num_layers,   <span class="com"># 2 layers</span>
+      batch_first = <span class="kw">True</span>,
+      dropout     = dropout,      <span class="com"># 0.2 between layers</span>
+    )
+    self.fc = nn.Linear(hidden_size, <span class="num-lit">1</span>)  <span class="com"># → scalar vol forecast</span>
+
+  <span class="kw">def</span> <span class="fn">forward</span>(self, x: torch.Tensor):
+    out, _ = self.lstm(x)          <span class="com"># (batch, seq_len, 64)</span>
+    out = self.fc(out[:, -<span class="num-lit">1</span>, :])   <span class="com"># last time-step only</span>
+    <span class="kw">return</span> out.squeeze(-<span class="num-lit">1</span>)         <span class="com"># (batch,)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="training">
+      <div class="section-num">09 — Model · Training</div>
+      <h2 class="section-h">25 epochs, chronological split, Adam.</h2>
+      <p class="prose">Training follows a strict chronological 80/20 split. The first 80% of each ticker's history constitutes the training set; the remaining 20% is held out for validation. <strong>No shuffling</strong> is applied — shuffling time series would allow future observations to inform past predictions, producing a positively biased estimate of out-of-sample performance.</p>
+      <p class="prose">The model is optimized with Adam (learning rate 1×10⁻³) on mean squared error loss. Gradient norms are clipped at 1.0 to prevent the exploding gradient problem that frequently destabilizes LSTM training. Training runs for 25 epochs; the checkpoint with the lowest validation loss is saved as the production model. All random seeds are fixed and CuDNN is configured for deterministic operation to ensure full reproducibility.</p>
+      <div class="formula">
+        Loss = MSE(σ̂, σ) = (1/N) Σ (σ̂_i − σ_i)²
+        <span class="comment">
+        // Optimizer: Adam, lr = 1e-3
+        // Gradient clipping: max_norm = 1.0
+        // Epochs: 25 · best val checkpoint saved</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="scaling">
+      <div class="section-num">10 — Model · Scaling & leakage prevention</div>
+      <h2 class="section-h">Fit the scaler on training data only.</h2>
+      <p class="prose">All features are normalized using a global MinMaxScaler that is fit on the training partition of the dataset only. This is a <strong>hard requirement</strong> for honest evaluation: fitting the scaler on the full dataset would allow the normalization to carry information about the future distribution of features back into training — a subtle form of look-ahead bias that inflates validation metrics without reflecting real-world performance.</p>
+      <p class="prose">For the pooled model, the scaler is fit on the concatenated training data across all 503 tickers, then applied uniformly. This means the scale of features is anchored to the historical market distribution observed before the train/val cutoff date.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="baselines">
+      <div class="section-num">11 — Results · Baselines</div>
+      <h2 class="section-h">Two hard baselines that are easy to overlook.</h2>
+      <p class="prose">We test against two baselines that represent the strongest naive forecasting strategies for volatility:</p>
+      <p class="prose"><strong>Naive persistence</strong> predicts that next-period volatility equals current-period volatility: σ̂(t+1) = σ(t). This baseline exploits the well-known persistence in volatility and is surprisingly competitive — it is frequently cited as the benchmark that GARCH models only marginally improve upon.</p>
+      <p class="prose"><strong>Historical mean</strong> predicts next-period volatility as the 21-day rolling average of past realized volatility. This smooths out noise while still using only information available at prediction time.</p>
+      <div class="callout"><strong>Why these matter:</strong> A model that cannot beat naive persistence is not useful, regardless of its R². These baselines establish the floor that any production model must clear.</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="results">
+      <div class="section-num">12 — Results</div>
+      <h2 class="section-h">The LSTM wins on every metric.</h2>
+      <p class="prose">All metrics are computed on the held-out validation set (the most recent 20% of each ticker's history), using model weights from the best-validation-loss checkpoint across 25 training epochs.</p>
+      <div class="result-grid">
+        <div class="rc winner">
+          <div class="rc-val">0.94</div>
+          <div class="rc-label">R²</div>
+          <div class="rc-model">Sentinel LSTM</div>
+        </div>
+        <div class="rc winner">
+          <div class="rc-val">0.43%</div>
+          <div class="rc-label">RMSE</div>
+          <div class="rc-model">Sentinel LSTM</div>
+        </div>
+        <div class="rc winner">
+          <div class="rc-val">52.6%</div>
+          <div class="rc-label">Direction Acc.</div>
+          <div class="rc-model">Sentinel LSTM</div>
+        </div>
+      </div>
+      <table class="feat-table">
+        <thead><tr><th>Model</th><th>MSE</th><th>R²</th><th>Direction</th></tr></thead>
+        <tbody>
+          <tr><td>Naive persistence</td><td>0.000499</td><td>−0.69</td><td>36.7%</td></tr>
+          <tr><td>Historical mean (21d)</td><td>0.000319</td><td>−0.08</td><td>—</td></tr>
+          <tr style="color:var(--accent)"><td><strong>Sentinel LSTM</strong></td><td><strong>0.000018</strong></td><td><strong>+0.94</strong></td><td><strong>52.6%</strong></td></tr>
+        </tbody>
+      </table>
+      <p class="prose">The LSTM reduces MSE by 27× relative to naive persistence and achieves an R² of 0.94, indicating that the model explains 94% of the variance in future realized volatility. The RMSE of 0.43% means the typical prediction lands within half a percentage point of the actual realized volatility — a meaningful level of precision for position sizing purposes.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="limitations">
+      <div class="section-num">13 — Limitations & future work</div>
+      <h2 class="section-h">What this model cannot do.</h2>
+      <p class="prose"><strong>Regime breaks.</strong> The model was trained on data that includes several major volatility events (2008 financial crisis, COVID-19 March 2020, 2022 rate shock). However, the outliers in our scatter plots suggest the model underforecasts during the most extreme tail events. By definition, these events are rare in the training data and hard to learn from.</p>
+      <p class="prose"><strong>Directional accuracy.</strong> A 52.6% directional accuracy is only marginally better than chance. The model forecasts the level of volatility well but is not reliable as a binary "vol going up or down" signal. Strategies dependent on directional vol calls should not use this model directly.</p>
+      <p class="prose"><strong>Realized vs. implied volatility.</strong> Our target is statistical realized volatility — the empirical standard deviation of returns. Options prices are driven by implied volatility, which incorporates a variance risk premium and other market microstructure factors. A direct translation of our forecasts into options trading strategies would require an additional model for this gap.</p>
+      <p class="prose"><strong>Future directions</strong> include: testing on minute-level features (which would require substantially more compute — approximately 4 hours per ticker), adding more macro features (credit spreads, VIX term structure, earnings calendar), experimenting with Transformer architectures for longer sequence modeling, and building a GARCH(1,1) baseline for a more rigorous classical comparison.</p>
+
+      <div class="disc">
+        <span class="disc-mark">●</span>
+        <span>FOR EDUCATIONAL PURPOSES ONLY. This methodology document describes a research project completed as part of CSC 4343 at Louisiana State University. Sentinel is a risk literacy tool, not an investment adviser. Nothing in this document constitutes financial advice. Forecasts may be inaccurate and past model performance does not guarantee future results.</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <span>SENTINEL · METHODOLOGY · CSC 4343 · LSU</span>
+  <div style="display:flex;gap:20px;">
+    <a href="index.html">Home</a>
+    <a href="demo.html">Terminal</a>
+    <a href="https://github.com/WanderingWizard4/CSC4343-Stock" target="_blank">GitHub</a>
+  </div>
+</footer>
+
+<script>
+// Highlight active TOC link on scroll
+const sections = document.querySelectorAll('.section[id]');
+const links = document.querySelectorAll('.toc-link');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.toc-link[href="#${e.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
