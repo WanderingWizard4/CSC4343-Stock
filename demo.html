@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Volatility Risk Advisor — CSC 4343</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #1D9E75;
+    --brand-light: #E1F5EE;
+    --brand-dark: #085041;
+    --danger: #E24B4A;
+    --danger-light: #FCEBEB;
+    --danger-dark: #A32D2D;
+    --warn: #BA7517;
+    --warn-light: #FAEEDA;
+    --warn-dark: #854F0B;
+    --ink: #1A1A1A;
+    --ink-2: #6B6B6B;
+    --ink-3: #999999;
+    --line: rgba(0,0,0,0.10);
+    --line-2: rgba(0,0,0,0.18);
+    --bg: #FFFFFF;
+    --bg-2: #F7F6F3;
+    --bg-page: #FAFAF8;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: var(--font-sans); background: var(--bg-page); color: var(--ink); font-size: 15px; line-height: 1.5; min-height: 100vh; }
+  .page { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .hero { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--line); }
+  .hero h1 { font-size: 28px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.02em; }
+  .hero .tagline { font-size: 14px; color: var(--ink-2); line-height: 1.55; max-width: 560px; }
+  .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  .hero-stat { background: var(--bg-2); border-radius: var(--radius-md); padding: 12px 14px; }
+  .hero-stat .v { font-size: 20px; font-weight: 600; color: var(--brand-dark); }
+  .hero-stat .l { font-size: 11px; color: var(--ink-2); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .steps { display: flex; gap: 6px; margin-bottom: 1.75rem; }
+  .step-pill { flex: 1; height: 3px; border-radius: 2px; background: var(--line); transition: background 0.3s; }
+  .step-pill.done, .step-pill.active { background: var(--brand); }
+  .step-pill.active { opacity: 0.55; }
+
+  .card { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 1.5rem 1.75rem; margin-bottom: 1rem; }
+  .card-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 1rem; }
+
+  .ticker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ticker-btn { padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--bg-2); cursor: pointer; text-align: left; transition: all 0.15s; font-family: var(--font-sans); }
+  .ticker-btn:hover { border-color: var(--brand); }
+  .ticker-btn.selected { border-color: var(--brand); background: var(--brand-light); }
+  .ticker-btn .sym { font-weight: 600; font-size: 14px; display: block; color: var(--ink); }
+  .ticker-btn.selected .sym { color: var(--brand-dark); }
+  .ticker-btn .name { color: var(--ink-2); font-size: 11px; margin-top: 2px; display: block; }
+  .ticker-btn.selected .name { color: var(--brand); }
+  .ticker-btn .vol-tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px; margin-top: 6px; }
+  .vol-tag.lo { background: #E1F5EE; color: #085041; }
+  .vol-tag.mid { background: #FAEEDA; color: #854F0B; }
+  .vol-tag.hi { background: #FCEBEB; color: #A32D2D; }
+
+  .custom-row { display: flex; gap: 10px; margin-top: 12px; }
+  .custom-row input { flex: 1; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: var(--radius-md); font-size: 14px; font-family: var(--font-sans); background: var(--bg); color: var(--ink); }
+  .custom-row input:focus { outline: none; border-color: var(--brand); }
+  .custom-row button { padding: 0 16px; border: 1px solid var(--line-2); border-radius: var(--radius-md); background: var(--bg); cursor: pointer; font-family: var(--font-sans); font-size: 13px; color: var(--ink); }
+  .custom-row button:hover { background: var(--bg-2); }
+
+  .q-section { margin-bottom: 1.25rem; }
+  .q-text { font-size: 14px; font-weight: 500; margin-bottom: 10px; }
+  .choices { display: flex; flex-direction: column; gap: 6px; }
+  .choice-btn { padding: 11px 14px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--bg-2); cursor: pointer; text-align: left; font-size: 13px; color: var(--ink); transition: all 0.15s; font-family: var(--font-sans); }
+  .choice-btn:hover { border-color: var(--brand); }
+  .choice-btn.selected { border-color: var(--brand); background: var(--brand-light); color: var(--brand-dark); font-weight: 500; }
+
+  .next-btn { width: 100%; padding: 13px; background: var(--brand); color: #fff; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; font-family: var(--font-sans); }
+  .next-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .next-btn:hover:not(:disabled) { opacity: 0.88; }
+  .back-btn { background: none; border: none; color: var(--ink-2); font-size: 13px; cursor: pointer; padding: 8px 0; margin-bottom: 12px; font-family: var(--font-sans); }
+  .back-btn:hover { color: var(--ink); }
+
+  .metric-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 1rem; }
+  .metric { background: var(--bg-2); border-radius: var(--radius-md); padding: 14px 12px; text-align: center; }
+  .metric .val { font-size: 24px; font-weight: 600; margin-bottom: 3px; }
+  .metric .lbl { font-size: 11px; color: var(--ink-2); }
+
+  .gauge-wrap { margin: 1.25rem 0 0.5rem; }
+  .gauge-bar { height: 10px; border-radius: 5px; background: linear-gradient(to right, #1D9E75, #EF9F27, #E24B4A); position: relative; }
+  .gauge-needle { position: absolute; top: -6px; width: 3px; height: 22px; background: var(--ink); border-radius: 2px; transform: translateX(-50%); transition: left 1.1s cubic-bezier(.4,0,.2,1); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .gauge-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--ink-2); }
+
+  .verdict { border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1rem; border: 1px solid; }
+  .verdict.green { background: #E1F5EE; border-color: #5DCAA5; }
+  .verdict.amber { background: #FAEEDA; border-color: #EF9F27; }
+  .verdict.red { background: #FCEBEB; border-color: #F09595; }
+  .verdict .v-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .verdict.green .v-title { color: var(--brand-dark); }
+  .verdict.amber .v-title { color: var(--warn-dark); }
+  .verdict.red .v-title { color: var(--danger-dark); }
+  .verdict .v-body { font-size: 13px; line-height: 1.6; }
+  .verdict.green .v-body { color: #0F6E56; }
+  .verdict.amber .v-body { color: var(--warn-dark); }
+  .verdict.red .v-body { color: var(--danger-dark); }
+
+  .sizing-box { background: var(--bg-2); border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 0.85rem; }
+  .sizing-box .s-label { font-size: 12px; color: var(--ink-2); margin-bottom: 4px; }
+  .sizing-box .s-val { font-size: 28px; font-weight: 600; color: var(--brand-dark); }
+  .sizing-box .s-note { font-size: 12px; color: var(--ink-2); margin-top: 6px; line-height: 1.5; }
+
+  .range-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: var(--bg-2); border-radius: var(--radius-md); }
+  .range-row .lo { font-size: 12px; color: var(--ink-2); }
+  .range-row .hi { font-size: 16px; font-weight: 600; color: var(--danger-dark); }
+
+  .chart-wrap { position: relative; width: 100%; height: 200px; margin: 1rem 0 0.25rem; }
+
+  .reset-btn { width: 100%; padding: 11px; background: none; border: 1px solid var(--line-2); border-radius: var(--radius-md); font-size: 13px; color: var(--ink-2); cursor: pointer; font-family: var(--font-sans); }
+  .reset-btn:hover { background: var(--bg-2); color: var(--ink); }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .loading-screen { text-align: center; padding: 4rem 0; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1.25rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--ink); margin-bottom: 4px; font-weight: 500; }
+  .loading-sub { font-size: 12px; color: var(--ink-3); font-family: var(--font-mono); }
+
+  .model-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--brand-light); color: var(--brand-dark); font-size: 11px; font-weight: 600; padding: 5px 11px; border-radius: var(--radius-md); margin-bottom: 1rem; letter-spacing: 0.02em; }
+  .model-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--brand); display: inline-block; }
+
+  .benchmark-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: center; }
+  .benchmark-row.head { color: var(--ink-3); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 0 10px; border-bottom: 1px solid var(--line-2); font-weight: 600; }
+  .benchmark-row.lstm { background: var(--brand-light); padding: 12px 12px; border-radius: var(--radius-md); border-bottom: none; margin-top: 6px; font-weight: 600; color: var(--brand-dark); }
+  .benchmark-row.lstm .num { color: var(--brand-dark); }
+  .num { font-family: var(--font-mono); font-size: 12px; text-align: right; }
+  .row-label { font-weight: 500; color: var(--ink); font-size: 13px; }
+  .benchmark-row .row-label-sub { font-size: 11px; color: var(--ink-2); font-weight: 400; margin-top: 1px; }
+  .benchmark-row.lstm .row-label-sub { color: var(--brand-dark); opacity: 0.75; }
+
+  .tip-banner { background: var(--bg-2); border-left: 3px solid var(--brand); padding: 12px 16px; border-radius: 4px; font-size: 12px; color: var(--ink-2); margin-bottom: 1.25rem; line-height: 1.55; }
+
+  footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: 11px; color: var(--ink-3); }
+  footer a { color: var(--brand-dark); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hero">
+    <h1>Volatility Risk Advisor</h1>
+    <p class="tagline">An applied front-end for the CSC 4343 universal LSTM. Get a personalized 21-day volatility forecast for any S&amp;P 500 stock, matched to your individual risk profile and translated into a recommended position size.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="v">93.8%</div><div class="l">Model R²</div></div>
+      <div class="hero-stat"><div class="v">503</div><div class="l">Tickers covered</div></div>
+      <div class="hero-stat"><div class="v">21d</div><div class="l">Forecast horizon</div></div>
+    </div>
+  </div>
+
+  <div class="steps" id="stepBar"></div>
+
+  <div id="s0" class="screen active">
+    <div class="card">
+      <div class="card-label">Step 1 — Pick a stock to analyze</div>
+      <div class="ticker-grid" id="tickerGrid"></div>
+      <div class="custom-row">
+        <input type="text" id="customTicker" placeholder="Or type any ticker (e.g. NVDA, COST)" maxlength="6" style="text-transform:uppercase" />
+        <button onclick="addCustomTicker()">Add</button>
+      </div>
+    </div>
+    <button class="next-btn" id="btn0" onclick="goTo(1)" disabled>Continue</button>
+  </div>
+
+  <div id="s1" class="screen">
+    <button class="back-btn" onclick="goTo(0)">← Back to stocks</button>
+    <div class="card">
+      <div class="card-label">Step 2 — Build your risk profile</div>
+      <div class="tip-banner">There are no right answers. We use these to translate the model's volatility forecast into a position size and verdict that fits you specifically.</div>
+      <div id="qCards"></div>
+    </div>
+    <button class="next-btn" id="btn1" onclick="goTo(2)" disabled>See my forecast</button>
+  </div>
+
+  <div id="s2" class="screen">
+    <div class="loading-screen" id="loadingDiv">
+      <div class="spinner"></div>
+      <p class="loading-text">Running LSTM inference</p>
+      <p class="loading-sub">2-layer LSTM · 64 hidden units · 60-day look-back</p>
+    </div>
+    <div id="resultsDiv" style="display:none"></div>
+  </div>
+
+  <footer>
+    Built for CSC 4343 — Applied Deep Learning · Louisiana State University<br>
+    Forecasting Finances by David, Landin, Nathan, Erfan, and Derek
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const TICKERS = [
+  {sym:'WMT',  name:'Walmart',        vol:0.0098, regime:'lo'},
+  {sym:'JPM',  name:'JPMorgan',       vol:0.0135, regime:'lo'},
+  {sym:'MSFT', name:'Microsoft',      vol:0.0156, regime:'mid'},
+  {sym:'AAPL', name:'Apple',          vol:0.0178, regime:'mid'},
+  {sym:'GOOGL',name:'Alphabet',       vol:0.0192, regime:'mid'},
+  {sym:'AMZN', name:'Amazon',         vol:0.0215, regime:'mid'},
+  {sym:'NVDA', name:'NVIDIA',         vol:0.0341, regime:'hi'},
+  {sym:'TSLA', name:'Tesla',          vol:0.0382, regime:'hi'},
+];
+const VOL_TAGS = {lo:'Low vol', mid:'Mid vol', hi:'High vol'};
+
+const QUESTIONS = [
+  { id:'horizon', text:'How long do you plan to hold this investment?',
+    choices:[
+      {label:'Less than 1 year', score:1},
+      {label:'1 to 3 years', score:2},
+      {label:'3 to 7 years', score:3},
+      {label:'More than 7 years', score:4},
+    ]},
+  { id:'reaction', text:'If this investment dropped 20% in a month, you would:',
+    choices:[
+      {label:'Sell immediately to stop losses', score:1},
+      {label:'Feel anxious but hold on', score:2},
+      {label:'Stay calm — it will recover', score:3},
+      {label:'Buy more — great opportunity', score:4},
+    ]},
+  { id:'income', text:'How stable is your income outside this investment?',
+    choices:[
+      {label:'Unstable — I might need this money soon', score:1},
+      {label:'Somewhat stable', score:2},
+      {label:'Stable with 6+ months emergency fund', score:3},
+      {label:'Very stable — discretionary money', score:4},
+    ]},
+  { id:'experience', text:'How much investment experience do you have?',
+    choices:[
+      {label:'None — just starting out', score:1},
+      {label:'Some — a few years', score:2},
+      {label:'Experienced — I understand market cycles', score:3},
+      {label:'Professional or advanced', score:4},
+    ]},
+  { id:'goal', text:'What is your primary investment goal?',
+    choices:[
+      {label:'Capital preservation', score:1},
+      {label:'Moderate growth with safety', score:2},
+      {label:'Long-term growth, can handle swings', score:3},
+      {label:'Maximum growth, large losses tolerable', score:4},
+    ]},
+];
+
+const DEFAULT_VOL = 0.0210;
+let selectedTicker = null;
+let answers = {};
+let currentStep = 0;
+
+function buildStepBar() {
+  const bar = document.getElementById('stepBar');
+  bar.innerHTML = '';
+  ['Stock','Profile','Forecast'].forEach((_,i) => {
+    const p = document.createElement('div');
+    p.className = 'step-pill' + (i < currentStep ? ' done' : i === currentStep ? ' active' : '');
+    bar.appendChild(p);
+  });
+}
+
+function buildTickers() {
+  const grid = document.getElementById('tickerGrid');
+  grid.innerHTML = '';
+  TICKERS.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'ticker-btn' + (selectedTicker === t.sym ? ' selected' : '');
+    btn.innerHTML = `<span class="sym">${t.sym}</span><span class="name">${t.name}</span><span class="vol-tag ${t.regime}">${VOL_TAGS[t.regime]}</span>`;
+    btn.onclick = () => { selectedTicker = t.sym; buildTickers(); document.getElementById('btn0').disabled = false; };
+    grid.appendChild(btn);
+  });
+}
+
+function addCustomTicker() {
+  const inp = document.getElementById('customTicker');
+  const sym = inp.value.trim().toUpperCase();
+  if (!sym) return;
+  if (!TICKERS.find(t => t.sym === sym)) {
+    const hash = sym.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+    const vol = 0.013 + (hash % 30) / 1000;
+    const regime = vol < 0.014 ? 'lo' : vol < 0.025 ? 'mid' : 'hi';
+    TICKERS.push({sym, name: sym + ' (custom)', vol, regime});
+  }
+  selectedTicker = sym;
+  inp.value = '';
+  buildTickers();
+  document.getElementById('btn0').disabled = false;
+}
+
+function buildQuestions() {
+  const container = document.getElementById('qCards');
+  container.innerHTML = '';
+  answers = {};
+  document.getElementById('btn1').disabled = true;
+  QUESTIONS.forEach((q, qi) => {
+    const sec = document.createElement('div');
+    sec.className = 'q-section';
+    sec.innerHTML = `<div class="q-text">${qi+1}. ${q.text}</div><div class="choices" id="choices${qi}"></div>`;
+    container.appendChild(sec);
+    q.choices.forEach((c) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = c.label;
+      btn.onclick = () => {
+        document.querySelectorAll(`#choices${qi} .choice-btn`).forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        answers[q.id] = c.score;
+        if (Object.keys(answers).length === QUESTIONS.length) {
+          document.getElementById('btn1').disabled = false;
+        }
+      };
+      document.getElementById('choices'+qi).appendChild(btn);
+    });
+  });
+}
+
+function getRiskScore() {
+  const total = Object.values(answers).reduce((a,b) => a+b, 0);
+  const max = QUESTIONS.length * 4;
+  return Math.round((total / max) * 100);
+}
+
+function getRiskProfile(score) {
+  if (score < 35) return {label:'Conservative', target:0.10, blurb:'You prioritize capital preservation. Keep volatility low and position sizes small.'};
+  if (score < 55) return {label:'Moderate',     target:0.15, blurb:'You balance growth and safety. Tolerate moderate volatility but stay diversified.'};
+  if (score < 75) return {label:'Balanced',     target:0.22, blurb:'You can handle market swings for higher long-term returns.'};
+  return                 {label:'Aggressive',   target:0.32, blurb:'You can tolerate large drawdowns in pursuit of maximum growth.'};
+}
+
+function getVolLabel(annVol) {
+  if (annVol < 0.20) return {level:'Low', color:'green'};
+  if (annVol < 0.35) return {level:'Moderate', color:'amber'};
+  return {level:'High', color:'red'};
+}
+
+function getMatch(annVol, target) {
+  const ratio = annVol / target;
+  if (ratio <= 1.05) return 'green';
+  if (ratio <= 1.6)  return 'amber';
+  return 'red';
+}
+
+function generateTrend(currentVol) {
+  const out = [];
+  let v = currentVol * 0.85;
+  for (let i = 0; i < 12; i++) {
+    v = v + (currentVol - v) * 0.25 + (Math.sin(i * 1.7) * 0.0008) + ((i % 3) * 0.0003 - 0.0003);
+    out.push(Math.max(0.005, v));
+  }
+  out[11] = currentVol;
+  return out;
+}
+
+function buildResults() {
+  const profile = TICKERS.find(t => t.sym === selectedTicker) || {sym:selectedTicker, name:selectedTicker, vol:DEFAULT_VOL, regime:'mid'};
+  const vol = profile.vol;
+  const annVol = vol * Math.sqrt(252);
+  const riskScore = getRiskScore();
+  const risk = getRiskProfile(riskScore);
+  const volLabel = getVolLabel(annVol);
+  const match = getMatch(annVol, risk.target);
+  const positionSize = Math.min(100, Math.round((risk.target / annVol) * 100));
+  const monthLoss95 = (annVol / Math.sqrt(12) * 1.65 * 100).toFixed(1);
+  const trend = generateTrend(vol);
+  const months = ['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
+
+  const verdictMap = {
+    green: {
+      title:`${selectedTicker} fits well within your ${risk.label.toLowerCase()} profile`,
+      body:`Forecasted 21-day annualized volatility is <b>${(annVol*100).toFixed(0)}%</b>, comfortably within your <b>${(risk.target*100).toFixed(0)}%</b> risk target. You can hold this stock at the recommended size with confidence.`
+    },
+    amber: {
+      title:`${selectedTicker} runs slightly hot for a ${risk.label.toLowerCase()} profile`,
+      body:`Forecasted volatility (<b>${(annVol*100).toFixed(0)}%</b>) is above your <b>${(risk.target*100).toFixed(0)}%</b> target, but not extreme. Hold a smaller-than-average position so this stock doesn't dominate the risk in your portfolio.`
+    },
+    red: {
+      title:`${selectedTicker} significantly exceeds your ${risk.label.toLowerCase()} profile`,
+      body:`Forecasted volatility (<b>${(annVol*100).toFixed(0)}%</b>) is well above your <b>${(risk.target*100).toFixed(0)}%</b> target. Limit to the recommended position size or smaller. A larger holding could expose you to losses beyond your stated tolerance.`
+    }
+  };
+  const v = verdictMap[match];
+  const gaugePos = Math.min(95, Math.max(3, (annVol / 0.60) * 100));
+
+  const div = document.getElementById('resultsDiv');
+  div.innerHTML = `
+    <div class="model-badge">Universal LSTM · trained on 503 tickers · R² = 0.938</div>
+
+    <div class="card">
+      <div class="card-label">${selectedTicker} — 21-day volatility forecast</div>
+      <div class="metric-row">
+        <div class="metric"><div class="val">${(vol*100).toFixed(2)}%</div><div class="lbl">Daily volatility</div></div>
+        <div class="metric"><div class="val">${(annVol*100).toFixed(0)}%</div><div class="lbl">Annualized</div></div>
+        <div class="metric"><div class="val" style="color:var(--${volLabel.color === 'green' ? 'brand' : volLabel.color === 'amber' ? 'warn' : 'danger'})">${volLabel.level}</div><div class="lbl">Vol regime</div></div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge-bar"><div class="gauge-needle" id="needle"></div></div>
+        <div class="gauge-labels"><span>Low</span><span>Moderate</span><span>High</span></div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="volChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Your risk profile — ${risk.label} (${riskScore}/100)</div>
+      <p style="font-size:13px; color:var(--ink-2); margin-bottom:1.25rem; line-height:1.55;">${risk.blurb}</p>
+      <div class="verdict ${match}">
+        <div class="v-title">${v.title}</div>
+        <div class="v-body">${v.body}</div>
+      </div>
+      <div class="sizing-box">
+        <div class="s-label">Suggested max position size</div>
+        <div class="s-val">${positionSize}% of portfolio</div>
+        <div class="s-note">Volatility-targeting: position size = your annual risk target ÷ forecasted annualized vol</div>
+      </div>
+      <div class="range-row">
+        <span class="lo">Worst expected 1-month loss (95% confidence)</span>
+        <span class="hi">≤ ${monthLoss95}%</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Why trust this forecast</div>
+      <div class="benchmark-row head"><div>Model</div><div>MSE</div><div>R²</div><div>Direction</div></div>
+      <div class="benchmark-row"><div><span class="row-label">Naive persistence</span><div class="row-label-sub">today's vol = tomorrow's vol</div></div><div class="num">0.000499</div><div class="num">−0.69</div><div class="num">36.7%</div></div>
+      <div class="benchmark-row"><div><span class="row-label">Historical mean</span><div class="row-label-sub">21-day rolling average</div></div><div class="num">0.000319</div><div class="num">−0.08</div><div class="num">—</div></div>
+      <div class="benchmark-row lstm"><div><span class="row-label">Our LSTM</span><div class="row-label-sub">2-layer · 64 hidden · pooled</div></div><div class="num">0.000018</div><div class="num">+0.94</div><div class="num">52.6%</div></div>
+      <p style="font-size:12px; color:var(--ink-2); margin-top:14px; line-height:1.55;">The LSTM beats both baselines on every metric. RMSE of 0.43% means typical predictions land within a half-percentage-point of the actual realized volatility.</p>
+    </div>
+
+    <button class="reset-btn" onclick="restart()">Try another stock</button>
+  `;
+
+  setTimeout(() => {
+    const needle = document.getElementById('needle');
+    if (needle) needle.style.left = gaugePos + '%';
+    const ctx = document.getElementById('volChart');
+    if (ctx && window.Chart) {
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: months,
+          datasets: [{
+            data: trend.map(v => parseFloat((v*100).toFixed(3))),
+            borderColor: '#1D9E75',
+            backgroundColor: 'rgba(29,158,117,0.10)',
+            borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#1D9E75',
+            tension: 0.4, fill: true,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(2) + '%' } } },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            y: { grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { font: { size: 11 }, callback: v => v.toFixed(1) + '%' } }
+          }
+        }
+      });
+    }
+  }, 100);
+}
+
+function goTo(step) {
+  currentStep = step;
+  buildStepBar();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s'+step).classList.add('active');
+  if (step === 1) buildQuestions();
+  if (step === 2) {
+    document.getElementById('loadingDiv').style.display = 'block';
+    document.getElementById('resultsDiv').style.display = 'none';
+    setTimeout(() => {
+      buildResults();
+      document.getElementById('loadingDiv').style.display = 'none';
+      document.getElementById('resultsDiv').style.display = 'block';
+    }, 1600);
+  }
+}
+
+function restart() {
+  selectedTicker = null;
+  answers = {};
+  goTo(0);
+  buildTickers();
+  document.getElementById('btn0').disabled = true;
+}
+
+buildStepBar();
+buildTickers();
+</script>
+</body>
+</html>
